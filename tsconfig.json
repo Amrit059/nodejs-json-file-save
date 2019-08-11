@@ -1,0 +1,29 @@
+{
+  "files": [
+    "server/server.ts"
+  ],
+  "include": [
+    "server/**/*.ts"
+  ],
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "target": "es6",
+    "outDir": "server-dist",
+    "rootDir": "server",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports":true,
+    "removeComments": true,
+    "typeRoots": [ "node_modules/@types" ],
+    "paths": {
+      "*": [
+        "node_modules/@types/*",
+        "./server/types/*"
+      ]
+    }
+  }
+}
