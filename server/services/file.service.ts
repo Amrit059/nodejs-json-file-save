@@ -1,14 +1,15 @@
 import { Observable, from, of, Observer } from 'rxjs';
 import 'reflect-metadata';
 import { injectable } from 'inversify';
+import { FileModel, ToDoListModel } from '../models/file.model';
 const fs = require('fs');
 
 
 export interface FileService {
     generateObjectId(id: number | null, entities: any[]): number;
-    getDataFromFile(entityName: string, storagePath: string): Observable<any>;
-    createFileData(entities: any, entityName: string, storagePath: string): Observable<any>;
-    updateFileData(entities: any, storagePath: string): Observable<any>;
+    getDataFromFile(entityName: string, storagePath: string): Observable<FileModel>;
+    createFileData(entities: FileModel, entityName: string, storagePath: string): Observable<FileModel>;
+    updateFileData(entities: ToDoListModel, storagePath: string): Observable<FileModel>;
 }
 
 @injectable()
@@ -51,10 +52,10 @@ export class FileServiceImp implements FileService {
             });
     }
 
-    createFileData(entities: any, entityName: string, storagePath: string): Observable<any> {
+    createFileData(entities: FileModel, entityName: string, storagePath: string): Observable<FileModel> {
         console.log('final entity is', entities);
         return Observable.create(
-            (observer: Observer<any>) => {
+            (observer: Observer<FileModel>) => {
                 this.getDataFromFile(entityName, 'package.json').subscribe(
                     (result: any) => {
                         const newEntities = entities;
@@ -75,34 +76,39 @@ export class FileServiceImp implements FileService {
             });
     }
 
-    updateFileData(entities: any, storagePath: string): Observable<any> {
+    updateFileData(entities: ToDoListModel, storagePath: string): Observable<FileModel> {
         console.log('final entity is', entities);
+        let newEntities: FileModel;
         return Observable.create(
-            (observer: Observer<any>) => {
+            (observer: Observer<FileModel>) => {
                 this.getDataFromFile('ammy', 'AmritpalSingh.json').subscribe(
-                    (result: any) => {
-                        const newEntities = result;
+                    (result: FileModel) => {
+                        newEntities = result;
+                        console.log('inside before if newEntities is', newEntities);
                         for (const object of newEntities.to_do_list) {
-                            if (entities.id && object.id === entities.id ) {
+                            if (object.id === object.id) {
                                 object.text = entities.text;
+                                console.log('inside if entity is', object);
                             } else {
+                                entities.id = this.generateObjectId(entities.id, result.to_do_list);
                                 newEntities.to_do_list.push(entities);
-                                object.id = this.generateObjectId(object.id, newEntities.to_do_list);
+                                console.log('inside else newEntities is', newEntities);
                             }
                         }
-                        observer.next(newEntities);
-                        fs.writeFile(storagePath,
-                            JSON.stringify(newEntities, null, 2), (err: Error) => {
-                                if (err) {
-                                    console.error(`Error loading entities ammy from storage '${storagePath}:`);
-                                    observer.error(err);
-                                }
-                                observer.next(entities);
-                            });
+                    });
+                console.log('new etity is', newEntities);
+                fs.writeFile(storagePath,
+                    JSON.stringify(newEntities, null, 2), (err: Error) => {
+                        if (err) {
+                            console.error(`Error loading entities ammy from storage '${storagePath}:`);
+                            observer.error(err);
+                        }
+                observer.next(newEntities);
                     });
             });
     }
 }
+
 
 
 

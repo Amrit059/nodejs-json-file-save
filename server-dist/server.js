@@ -248,7 +248,12 @@ let FileController = class FileController {
         obj.to_do_list = entites;
         this.fileService.createFileData(obj, 'amritpal', 'AmritpalSingh.json').subscribe((result) => {
             console.log('result is ', result);
-            res.status(201).send('file is created');
+            if (!result) {
+                res.status(201).send('file is created');
+            }
+            else {
+                res.status(202).send('file is not created');
+            }
         }, (err) => {
             res.status(204).send(err);
         });
@@ -256,7 +261,12 @@ let FileController = class FileController {
     getAuthorToDoList(req, res, next) {
         console.log('Inside getAuthorToDoList !');
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe((result) => {
-            res.status(200).send(result ? result : {});
+            if (!result) {
+                res.status(200).send(result ? result : {});
+            }
+            else {
+                res.status(202).send('file list is not available');
+            }
         }, (err) => {
             res.status(204).send(err);
         });
@@ -264,9 +274,14 @@ let FileController = class FileController {
     getAuthorToDoDetail(req, res, next) {
         console.log('Inside getAuthorToDoDetail !');
         const ids = req.params.id;
+        console.log('ids is ', ids);
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe((result) => {
-            result.to_do_list.find((e) => console.log(e.id));
-            res.status(200).send(result ? result : {});
+            if (result.to_do_list.find((e) => Number(e.id) === Number(ids))) {
+                res.status(200).send(result ? result : {});
+            }
+            else {
+                res.status(202).send('id is not available');
+            }
         }, (err) => {
             res.status(204).send(err);
         });
@@ -276,6 +291,12 @@ let FileController = class FileController {
         const obj = req.body;
         this.fileService.updateFileData(obj, 'AmritpalSingh.json').subscribe((result) => {
             console.log('result is ', result);
+            if (!result) {
+                res.status(201).send('file is updated');
+            }
+            else {
+                res.status(202).send('file list is not available');
+            }
             res.status(201).send('file is updated');
         }, (err) => {
             res.status(204).send(err);
@@ -283,18 +304,33 @@ let FileController = class FileController {
     }
     deleteAuthorToDoDetail(req, res, next) {
         console.log('Inside deleteAuthorToDoDetail !');
-        const entites = [];
-        const index = entites.indexOf((e) => e.id === +req.params.id);
-        if (index === -1) {
-            res.status(400).send({
-                'error': `No object found with the given ID ${req.params.id}`
-            });
-            return;
-        }
-        entites.splice(index, 1);
-        this.fileService.createFileData(entites, 'amritpal', 'AmritpalSingh.json').subscribe((result) => {
-            console.log('result is ', result);
-            res.status(200).send(result ? result : {});
+        const ids = req.params.id;
+        this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe((result) => {
+            if (result.to_do_list.find((e) => Number(e.id) === Number(ids))) {
+                console.log('inside if is ', result);
+                const index = result.to_do_list.findIndex((e) => Number(e.id) === Number(ids));
+                console.log('index is ', index);
+                if (index === -1) {
+                    res.status(400).send({
+                        'error': `No object found with the given ID ${req.params.id}`
+                    });
+                    return;
+                }
+                result.to_do_list.splice(index, 1);
+                this.fileService.createFileData(result, 'amritpal', 'AmritpalSingh.json').subscribe((files) => {
+                    if (!result) {
+                        res.status(201).send('file is deleted');
+                    }
+                    else {
+                        res.status(202).send('file list is not available');
+                    }
+                }, (err) => {
+                    res.status(204).send(err);
+                });
+            }
+            else {
+                res.status(202).send('id is not available');
+            }
         }, (err) => {
             res.status(204).send(err);
         });
@@ -394,27 +430,25 @@ let FileServiceImp = class FileServiceImp {
     }
     updateFileData(entities, storagePath) {
         console.log('final entity is', entities);
+        let newEntities;
         return rxjs_1.Observable.create((observer) => {
             this.getDataFromFile('ammy', 'AmritpalSingh.json').subscribe((result) => {
-                const newEntities = result;
+                newEntities = result;
+                console.log('inside before if newEntities is', newEntities);
                 for (const object of newEntities.to_do_list) {
-                    if (entities.id && object.id === entities.id) {
+                    if (object.id === object.id) {
                         object.text = entities.text;
+                        console.log('inside if entity is', object);
                     }
                     else {
+                        entities.id = this.generateObjectId(entities.id, result.to_do_list);
                         newEntities.to_do_list.push(entities);
-                        object.id = this.generateObjectId(object.id, newEntities.to_do_list);
+                        console.log('inside else newEntities is', newEntities);
                     }
                 }
-                observer.next(newEntities);
-                fs.writeFile(storagePath, JSON.stringify(newEntities, null, 2), (err) => {
-                    if (err) {
-                        console.error(`Error loading entities ammy from storage '${storagePath}:`);
-                        observer.error(err);
-                    }
-                    observer.next(entities);
-                });
             });
+            console.log('new etity is', newEntities);
+            observer.next(newEntities);
         });
     }
 };
