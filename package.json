@@ -15,7 +15,9 @@
         "start:web": "node server.js",
         "start:build-and-start-server": "npm run build && node ./server-dist/server.js",
         "start:dev": "set NODE_ENV=dev&& npm run start:build-and-start-server",
-        "start": "npm install && concurrently \"npm run start:dev\" \"npm run start:web\""
+        "start:prod": "NODE_ENV=prod&& npm run start:build-and-start-server",
+        "start": "npm install && concurrently \"npm run start:dev\" \"npm run start:web\"",
+        "ubuntu:start": "npm install && concurrently \"npm run start:prod\" \"npm run start:web\""
     },
     "keywords": [],
     "author": "AmritpalSingh",

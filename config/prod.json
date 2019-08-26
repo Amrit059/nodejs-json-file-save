@@ -1,0 +1,7 @@
+{
+    "appConfig": {
+        "hostConfig": {
+            "port": 4000
+        }
+    }
+}
