@@ -247,8 +247,7 @@ let FileController = class FileController {
         console.log('object is', entites);
         obj.to_do_list = entites;
         this.fileService.createFileData(obj, 'amritpal', 'AmritpalSingh.json').subscribe((result) => {
-            console.log('result is ', result);
-            if (!result) {
+            if (result) {
                 res.status(201).send('file is created');
             }
             else {
@@ -262,10 +261,10 @@ let FileController = class FileController {
         console.log('Inside getAuthorToDoList !');
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe((result) => {
             if (!result) {
-                res.status(200).send(result ? result : {});
+                res.status(202).send('file list is not available');
             }
             else {
-                res.status(202).send('file list is not available');
+                res.status(200).send(result ? result : {});
             }
         }, (err) => {
             res.status(204).send(err);
@@ -273,7 +272,7 @@ let FileController = class FileController {
     }
     getAuthorToDoDetail(req, res, next) {
         console.log('Inside getAuthorToDoDetail !');
-        const ids = req.params.id;
+        const ids = Number(req.params.id);
         console.log('ids is ', ids);
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe((result) => {
             if (result.to_do_list.find((e) => Number(e.id) === Number(ids))) {
@@ -304,7 +303,7 @@ let FileController = class FileController {
     }
     deleteAuthorToDoDetail(req, res, next) {
         console.log('Inside deleteAuthorToDoDetail !');
-        const ids = req.params.id;
+        const ids = Number(req.params.id);
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe((result) => {
             if (result.to_do_list.find((e) => Number(e.id) === Number(ids))) {
                 console.log('inside if is ', result);
@@ -448,7 +447,13 @@ let FileServiceImp = class FileServiceImp {
                 }
             });
             console.log('new etity is', newEntities);
-            observer.next(newEntities);
+            fs.writeFile(storagePath, JSON.stringify(newEntities, null, 2), (err) => {
+                if (err) {
+                    console.error(`Error loading entities ammy from storage '${storagePath}:`);
+                    observer.error(err);
+                }
+                observer.next(newEntities);
+            });
         });
     }
 };

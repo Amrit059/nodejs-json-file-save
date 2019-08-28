@@ -45,8 +45,8 @@ export class FileController implements RegistrableController {
         obj.to_do_list = entites;
         this.fileService.createFileData(obj, 'amritpal', 'AmritpalSingh.json').subscribe(
             (result: FileModel) => {
-                console.log('result is ', result);
-                if (!result) {
+                // console.log('result is ', result);
+                if (result) {
                     res.status(201).send('file is created');
                 } else {
                     res.status(202).send('file is not created');
@@ -62,9 +62,9 @@ export class FileController implements RegistrableController {
             (result: FileModel) => {
                 // console.log('result is ', result);
                 if (!result) {
-                    res.status(200).send(result ? result : {});
-                } else {
                     res.status(202).send('file list is not available');
+                } else {
+                    res.status(200).send(result ? result : {});
                 }
             }, (err: Error) => {
                 res.status(204).send(err);
@@ -73,7 +73,7 @@ export class FileController implements RegistrableController {
 
     public getAuthorToDoDetail(req: Request, res: Response, next: NextFunction): void {
         console.log('Inside getAuthorToDoDetail !');
-        const ids: number = req.params.id;
+        const ids: number = Number(req.params.id);
         console.log('ids is ', ids);
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe(
             (result: FileModel) => {
@@ -106,7 +106,7 @@ export class FileController implements RegistrableController {
 
     public deleteAuthorToDoDetail(req: Request, res: Response, next: NextFunction): void {
         console.log('Inside deleteAuthorToDoDetail !');
-        const ids: number = req.params.id;
+        const ids: number = Number(req.params.id);
         this.fileService.getDataFromFile('amritpal', 'AmritpalSingh.json').subscribe(
             (result: FileModel) => {
                 if (result.to_do_list.find((e: ToDoListModel) => Number(e.id) === Number(ids))) {
